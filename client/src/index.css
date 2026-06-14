@@ -229,14 +229,25 @@ a:hover {
 }
 
 .nav-logo {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
 }
 
 .nav-logo:hover {
   text-decoration: none;
+}
+
+.nav-logo-img {
+  height: 38px;
+  width: auto;
+  display: block;
+}
+
+@media (max-width: 767px) {
+  .nav-logo-img {
+    height: 32px;
+  }
 }
 
 .nav-links {

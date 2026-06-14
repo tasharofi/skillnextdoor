@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Skill Next Door logo mark">
+  <title>Skill Next Door Logo Mark</title>
+  <g fill="none" stroke="#4C6444" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <!-- outer owl/location-pin silhouette -->
+    <path d="M128 232C93 189 48 150 48 96C48 49 83 24 128 24C173 24 208 49 208 96C208 150 163 189 128 232Z"/>
+    <!-- owl brow / head curve -->
+    <path d="M66 82C86 43 119 54 128 89C137 54 170 43 190 82"/>
+    <!-- left eye curve -->
+    <path d="M68 88C82 92 96 94 108 91C120 88 128 96 128 112"/>
+    <!-- right eye curve -->
+    <path d="M188 88C174 92 160 94 148 91C136 88 128 96 128 112"/>
+    <!-- centre beak/nose -->
+    <path d="M128 112V134"/>
+    <!-- lower wing/body curve -->
+    <path d="M90 146C109 159 125 167 128 232"/>
+    <path d="M166 146C147 159 131 167 128 232"/>
+  </g>
+  <g fill="#4C6444">
+    <circle cx="93" cy="105" r="7"/>
+    <circle cx="163" cy="105" r="7"/>
+  </g>
+</svg>

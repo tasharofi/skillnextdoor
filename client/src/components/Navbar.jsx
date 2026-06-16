@@ -17,7 +17,7 @@ export default function Navbar() {
         <nav className="nav">
             <div className="nav-inner">
                 <Link to="/" className="nav-logo" aria-label="Skill Next Door">
-                    <img src="/logo-horizontal.svg" alt="Skill Next Door" className="nav-logo-img" />
+                    <img src="/logo-horizontal.png" srcSet="/logo-horizontal.png 1x, /logo-horizontal-2x.png 2x" alt="Skill Next Door" className="nav-logo-img" />
                 </Link>
 
                 <div className="nav-actions">

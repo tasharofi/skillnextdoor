@@ -239,14 +239,14 @@ a:hover {
 }
 
 .nav-logo-img {
-  height: 38px;
+  height: 46px;
   width: auto;
   display: block;
 }
 
 @media (max-width: 767px) {
   .nav-logo-img {
-    height: 32px;
+    height: 34px;
   }
 }
 

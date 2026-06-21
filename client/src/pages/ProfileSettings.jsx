@@ -296,11 +296,11 @@ export default function ProfileSettings() {
             });
             if (result.suggestions?.length > 0) {
                 setHeadlineSuggestions(result.suggestions);
-            } else {
-                showToast('AI could not generate suggestions right now.', 'info');
+            } else if (result.available === false) {
+                setAiAvailable(false); // all providers exhausted — hide silently
             }
         } catch {
-            showToast('AI helper is temporarily unavailable.', 'error');
+            /* network error — stay silent, no UI indication */
         } finally {
             setAiLoading('');
         }
@@ -318,11 +318,11 @@ export default function ProfileSettings() {
                 setPreviousBio(coachForm.bio);
                 setCoachForm(prev => ({ ...prev, bio: result.suggestion }));
                 showToast('Bio improved! Review the changes above.', 'success');
-            } else {
-                showToast('AI could not improve the bio right now.', 'info');
+            } else if (result.available === false) {
+                setAiAvailable(false); // all providers exhausted — hide silently
             }
         } catch {
-            showToast('AI helper is temporarily unavailable.', 'error');
+            /* network error — stay silent, no UI indication */
         } finally {
             setAiLoading('');
         }
@@ -343,11 +343,11 @@ export default function ProfileSettings() {
                 const filtered = result.suggestions.filter(s => !existing.has(s.toLowerCase()));
                 setSkillSuggestions(filtered.length > 0 ? filtered : null);
                 if (filtered.length === 0) showToast('All suggested skills are already added.', 'info');
-            } else {
-                showToast('AI could not suggest skills right now.', 'info');
+            } else if (result.available === false) {
+                setAiAvailable(false); // all providers exhausted — hide silently
             }
         } catch {
-            showToast('AI helper is temporarily unavailable. Your API quota may be exhausted — try again later.', 'error');
+            /* network error — stay silent, no UI indication */
         } finally {
             setAiLoading('');
         }
@@ -607,12 +607,14 @@ export default function ProfileSettings() {
                                         excludeNames={new Set(selectedSkills.map(s => s.name.toLowerCase()))}
                                         mode="coach"
                                     />
-                                    <div style={{ marginTop: 'var(--space-3)' }}>
-                                        <button type="button" className="btn-ai-helper" onClick={handleAISuggestSkills}
-                                            disabled={!aiAvailable || aiLoading === 'skills' || (!coachForm.bio.trim() && !coachForm.headline.trim())}>
-                                            {aiLoading === 'skills' ? '✨ Suggesting...' : !aiAvailable ? '✨ AI not configured' : '✨ Suggest skills with AI'}
-                                        </button>
-                                    </div>
+                                    {aiAvailable && (
+                                        <div style={{ marginTop: 'var(--space-3)' }}>
+                                            <button type="button" className="btn-ai-helper" onClick={handleAISuggestSkills}
+                                                disabled={aiLoading === 'skills' || (!coachForm.bio.trim() && !coachForm.headline.trim())}>
+                                                {aiLoading === 'skills' ? '✨ Suggesting...' : '✨ Suggest skills with AI'}
+                                            </button>
+                                        </div>
+                                    )}
                                     {skillSuggestions && skillSuggestions.length > 0 && (
                                         <div className="ai-suggestions-list" style={{ marginTop: 'var(--space-2)' }}>
                                             <p className="ai-suggestions-label">AI suggested skills:</p>
@@ -635,10 +637,12 @@ export default function ProfileSettings() {
                                         placeholder="e.g. Certified Tennis Coach — All Levels" maxLength={120} />
                                     <div className="form-field-actions">
                                         <span className="form-char-count">{coachForm.headline.length}/120</span>
-                                        <button type="button" className="btn-ai-helper" onClick={handleAIImproveHeadline}
-                                            disabled={!aiAvailable || aiLoading === 'headline' || !coachForm.headline.trim()}>
-                                            {aiLoading === 'headline' ? '✨ Generating...' : '✨ Improve headline with AI'}
-                                        </button>
+                                        {aiAvailable && (
+                                            <button type="button" className="btn-ai-helper" onClick={handleAIImproveHeadline}
+                                                disabled={aiLoading === 'headline' || !coachForm.headline.trim()}>
+                                                {aiLoading === 'headline' ? '✨ Generating...' : '✨ Improve headline with AI'}
+                                            </button>
+                                        )}
                                     </div>
                                     {headlineSuggestions && (
                                         <div className="ai-suggestions-list">
@@ -659,10 +663,12 @@ export default function ProfileSettings() {
                                         rows={5} maxLength={2000} />
                                     <div className="form-field-actions">
                                         <span className="form-char-count">{coachForm.bio.length}/2000</span>
-                                        <button type="button" className="btn-ai-helper" onClick={handleAIImproveBio}
-                                            disabled={!aiAvailable || aiLoading === 'bio' || !coachForm.bio.trim()}>
-                                            {aiLoading === 'bio' ? '✨ Improving...' : '✨ Improve bio with AI'}
-                                        </button>
+                                        {aiAvailable && (
+                                            <button type="button" className="btn-ai-helper" onClick={handleAIImproveBio}
+                                                disabled={aiLoading === 'bio' || !coachForm.bio.trim()}>
+                                                {aiLoading === 'bio' ? '✨ Improving...' : '✨ Improve bio with AI'}
+                                            </button>
+                                        )}
                                     </div>
                                     {previousBio && (
                                         <button type="button" className="btn-ai-undo"

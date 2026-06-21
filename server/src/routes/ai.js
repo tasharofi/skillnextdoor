@@ -6,7 +6,7 @@ const router = express.Router();
 
 // GET /api/ai/status — Check if AI is available
 router.get('/status', (req, res) => {
-    res.json({ available: AIService.isEnabled() });
+    res.json({ available: AIService.isAvailableNow() });
 });
 
 // (Removed: AI learner search parsing — learner search uses keyword/autocomplete only)
@@ -19,14 +19,14 @@ router.post('/improve-bio', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Please write at least a rough bio first' });
         }
 
-        if (!AIService.isEnabled()) {
+        if (!AIService.isAvailableNow()) {
             return res.json({ available: false, suggestion: null });
         }
 
         const suggestion = await AIService.improveCoachBio(text, context || {});
 
         if (!suggestion) {
-            return res.json({ available: true, suggestion: null });
+            return res.json({ available: AIService.isAvailableNow(), suggestion: null });
         }
 
         res.json({ available: true, suggestion });
@@ -44,14 +44,14 @@ router.post('/improve-headline', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Please write at least a rough headline first' });
         }
 
-        if (!AIService.isEnabled()) {
+        if (!AIService.isAvailableNow()) {
             return res.json({ available: false, suggestions: null });
         }
 
         const suggestions = await AIService.improveCoachHeadline(text, context || {});
 
         if (!suggestions || !Array.isArray(suggestions)) {
-            return res.json({ available: true, suggestions: null });
+            return res.json({ available: AIService.isAvailableNow(), suggestions: null });
         }
 
         res.json({ available: true, suggestions: suggestions.slice(0, 5) });
@@ -66,14 +66,14 @@ router.post('/suggest-skills', authenticate, async (req, res) => {
     try {
         const { context } = req.body;
 
-        if (!AIService.isEnabled()) {
+        if (!AIService.isAvailableNow()) {
             return res.json({ available: false, suggestions: null });
         }
 
         const suggestions = await AIService.suggestCoachSkillTags(context || {});
 
         if (!suggestions || !Array.isArray(suggestions)) {
-            return res.json({ available: true, suggestions: null });
+            return res.json({ available: AIService.isAvailableNow(), suggestions: null });
         }
 
         res.json({ available: true, suggestions: suggestions.slice(0, 6) });
@@ -91,14 +91,14 @@ router.post('/normalise-skill', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Skill input required' });
         }
 
-        if (!AIService.isEnabled()) {
+        if (!AIService.isAvailableNow()) {
             return res.json({ available: false, result: null });
         }
 
         const result = await AIService.normaliseCoachSkill(input, existingSkills || []);
 
         if (!result) {
-            return res.json({ available: true, result: null });
+            return res.json({ available: AIService.isAvailableNow(), result: null });
         }
 
         res.json({ available: true, result });

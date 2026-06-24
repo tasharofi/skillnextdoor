@@ -7,7 +7,7 @@ import {
     aiImproveBio, aiImproveHeadline, aiSuggestSkills,
 } from '../services/api';
 import SuburbAutocomplete from '../components/SuburbAutocomplete';
-import AvailabilityPicker from '../components/AvailabilityPicker';
+import AvailabilityPicker, { formatAvailability } from '../components/AvailabilityPicker';
 import SkillAutocomplete from '../components/SkillAutocomplete';
 import VerifyEmailBanner from '../components/VerifyEmailBanner';
 
@@ -822,7 +822,7 @@ export default function ProfileSettings() {
                                     <span className="profile-view-label">Availability</span>
                                     <span className="profile-view-value">
                                         {coachForm.availability?.length > 0
-                                            ? coachForm.availability.join(', ')
+                                            ? formatAvailability(coachForm.availability)
                                             : <span className="profile-view-empty">Not set</span>}
                                     </span>
                                 </div>

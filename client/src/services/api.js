@@ -231,3 +231,19 @@ export const aiSuggestSkills = (context) =>
     fetch(`${API_URL}/ai/suggest-skills`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ context }) }).then(handleResponse);
 
 // (Removed: aiNormaliseSkill — normalisation is handled server-side in resolve)
+
+// Messaging APIs
+export const getUnreadMessageCount = () =>
+    fetch(`${API_URL}/messages/unread-count`, { headers: getHeaders() }).then(handleResponse);
+
+export const getMessageThreads = () =>
+    fetch(`${API_URL}/messages/threads`, { headers: getHeaders() }).then(handleResponse);
+
+export const getMessageThread = (id) =>
+    fetch(`${API_URL}/messages/threads/${id}`, { headers: getHeaders() }).then(handleResponse);
+
+export const sendMessage = (id, body) =>
+    fetch(`${API_URL}/messages/threads/${id}`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ body }) }).then(handleResponse);
+
+export const markThreadRead = (id) =>
+    fetch(`${API_URL}/messages/threads/${id}/read`, { method: 'POST', headers: getHeaders() }).then(handleResponse);

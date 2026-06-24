@@ -1,11 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getUnreadMessageCount } from '../services/api';
 
 export default function Navbar() {
     const { user, loading, logout, isAdmin, isCoach, coachStatus } = useAuth();
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
+    const [unread, setUnread] = useState(0);
+
+    useEffect(() => {
+        if (!user) { setUnread(0); return; }
+        let alive = true;
+        const load = () => getUnreadMessageCount().then((r) => { if (alive) setUnread(r.count || 0); }).catch(() => {});
+        load();
+        const t = setInterval(load, 25000);
+        return () => { alive = false; clearInterval(t); };
+    }, [user]);
 
     const handleLogout = () => {
         logout();
@@ -27,6 +38,9 @@ export default function Navbar() {
                                 <Link to="/admin" className="btn btn-sm" style={{ color: 'var(--color-text-secondary)' }}>Admin</Link>
                             )}
                             <Link to="/dashboard" className="btn btn-outline btn-sm">Dashboard</Link>
+                            <Link to="/messages" className="btn btn-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                                Messages{unread > 0 && <span className="nav-badge">{unread > 9 ? '9+' : unread}</span>}
+                            </Link>
                             <Link to="/profile" className="btn btn-sm" style={{ color: 'var(--color-text-secondary)' }}>Profile</Link>
                             <button onClick={handleLogout} className="btn btn-sm" style={{ color: 'var(--color-text-secondary)' }}>
                                 Sign Out
@@ -53,6 +67,9 @@ export default function Navbar() {
                             <Link to="/admin" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Admin Panel</Link>
                         )}
                         <Link to="/dashboard" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+                        <Link to="/messages" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>
+                            Messages{unread > 0 && <span className="nav-badge">{unread > 9 ? '9+' : unread}</span>}
+                        </Link>
                         <Link to="/profile" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Profile</Link>
                         <button className="nav-mobile-link" onClick={handleLogout} style={{ textAlign: 'left' }}>Sign Out</button>
                     </>

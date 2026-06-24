@@ -11,6 +11,7 @@ import BecomeCoach from './pages/BecomeCoach';
 import CoachApplication from './pages/CoachApplication';
 import AdminPanel from './pages/AdminPanel';
 import ProfileSettings from './pages/ProfileSettings';
+import Messages from './pages/Messages';
 import VerifyEmail from './pages/VerifyEmail';
 
 function ProtectedRoute({ children }) {
@@ -42,6 +43,7 @@ export default function App() {
                     <Route path="/apply-coach" element={<ProtectedRoute><CoachApplication /></ProtectedRoute>} />
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
+                    <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                     <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

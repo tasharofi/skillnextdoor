@@ -3413,3 +3413,186 @@ select.form-input {
   color: var(--color-text-secondary);
   border-color: var(--color-text-muted);
 }
+
+/* ============================================
+   Messaging
+   ============================================ */
+
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+  line-height: 1;
+}
+
+.msg-page {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.msg-layout {
+  display: flex;
+  height: calc(100vh - var(--nav-height));
+  border-top: 1px solid var(--color-border);
+}
+
+.msg-list {
+  width: 340px;
+  min-width: 280px;
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  background: var(--color-bg);
+}
+
+.msg-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.msg-item:hover { background: var(--color-bg-secondary); }
+.msg-item.active { background: var(--color-primary-soft); }
+
+.msg-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.msg-item-name { font-weight: 600; font-size: var(--font-size-sm); color: var(--color-text); }
+.msg-item-time { font-size: var(--font-size-xs); color: var(--color-text-muted); flex-shrink: 0; }
+
+.msg-item-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.msg-item-preview {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.msg-item-unread {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.msg-thread-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-page);
+  min-width: 0;
+}
+
+.msg-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-muted);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.msg-thread-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+  flex-shrink: 0;
+}
+
+.msg-thread-title { font-weight: 600; color: var(--color-text); }
+.msg-thread-sub { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 2px; }
+
+.msg-thread-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.msg-bubble {
+  max-width: 74%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.msg-bubble.them {
+  align-self: flex-start;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text);
+  border-bottom-left-radius: 4px;
+}
+
+.msg-bubble.me {
+  align-self: flex-end;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-bottom-right-radius: 4px;
+}
+
+.msg-bubble-time { display: block; font-size: 10px; margin-top: 4px; opacity: 0.7; }
+
+.msg-reply {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-end;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  flex-shrink: 0;
+}
+
+.msg-reply textarea {
+  flex: 1;
+  resize: none;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  max-height: 120px;
+}
+
+.msg-reply textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18);
+}
+
+@media (max-width: 767px) {
+  .msg-layout { flex-direction: column; height: auto; }
+  .msg-list { width: 100%; min-width: 0; border-right: none; }
+  .msg-list.mobile-hidden, .msg-thread-pane.mobile-hidden { display: none; }
+  .msg-thread-pane { height: calc(100vh - var(--nav-height)); }
+}

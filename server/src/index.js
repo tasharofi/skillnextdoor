@@ -14,6 +14,7 @@ const adminRoutes = require('./routes/admin');
 const suburbRoutes = require('./routes/suburbs');
 const reportRoutes = require('./routes/reports');
 const aiRoutes = require('./routes/ai');
+const messageRoutes = require('./routes/messages');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -77,6 +78,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/suburbs', suburbRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/messages', messageRoutes);
 
 // File upload endpoint — uses Cloudinary in production, local disk in dev
 const multer = require('multer');

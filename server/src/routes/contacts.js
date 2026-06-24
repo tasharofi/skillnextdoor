@@ -29,6 +29,7 @@ router.post('/', authenticate, requireVerified, async (req, res) => {
             return res.status(404).json({ error: 'Coach not found' });
         }
 
+        const trimmedMessage = (message || '').trim();
         const contactRequest = await prisma.contactRequest.create({
             data: {
                 coachProfileId,
@@ -41,6 +42,19 @@ router.post('/', authenticate, requireVerified, async (req, res) => {
                 preferredTimes: preferredTimes || '[]',
                 message: message || '',
                 preferredSuburb: preferredSuburb || null,
+                lastMessageAt: new Date(),
+                // Seed the conversation thread with the learner's first message
+                ...(trimmedMessage
+                    ? {
+                          messages: {
+                              create: {
+                                  senderUserId: req.user.id,
+                                  senderRole: 'LEARNER',
+                                  body: trimmedMessage,
+                              },
+                          },
+                      }
+                    : {}),
             },
         });
 

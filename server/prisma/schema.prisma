@@ -49,6 +49,7 @@ model User {
   updatedAt          DateTime            @updatedAt
   coachProfile       CoachProfile?
   emailVerifications EmailVerification[]
+  sentMessages       Message[]
 }
 
 model EmailVerification {
@@ -135,6 +136,8 @@ model ContactRequest {
   message         String               @default("")
   preferredSuburb String?
   status          ContactRequestStatus @default(NEW)
+  lastMessageAt   DateTime?
+  messages        Message[]
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
 }
@@ -160,5 +163,25 @@ model ProfileReport {
   status          String       @default("NEW") // NEW | REVIEWED | DISMISSED
   adminNotes      String       @default("")
   createdAt       DateTime     @default(now())
+}
+
+enum MessageSenderRole {
+  LEARNER
+  COACH
+}
+
+model Message {
+  id               String            @id @default(uuid())
+  contactRequestId String
+  contactRequest   ContactRequest    @relation(fields: [contactRequestId], references: [id], onDelete: Cascade)
+  senderUserId     String
+  sender           User              @relation(fields: [senderUserId], references: [id], onDelete: Cascade)
+  senderRole       MessageSenderRole
+  body             String
+  readAt           DateTime?
+  createdAt        DateTime          @default(now())
+
+  @@index([contactRequestId])
+  @@index([senderUserId])
 }
 

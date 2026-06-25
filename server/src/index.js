@@ -226,8 +226,11 @@ process.on('unhandledRejection', (err) => {
 });
 
 // Bind to 0.0.0.0 explicitly — required for Railway/containerized environments
+const { startMessageNotificationSweep } = require('./utils/message-notifications');
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Skill Next Door API running on port ${PORT} (0.0.0.0)`);
+    startMessageNotificationSweep();
 }).on('error', (err) => {
     console.error('SERVER LISTEN ERROR:', err);
     process.exit(1);

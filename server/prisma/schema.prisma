@@ -179,6 +179,7 @@ model Message {
   senderRole       MessageSenderRole
   body             String
   readAt           DateTime?
+  notifiedAt       DateTime?
   createdAt        DateTime          @default(now())
 
   @@index([contactRequestId])

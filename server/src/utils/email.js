@@ -116,6 +116,25 @@ async function sendContactConfirmationToLearner(learnerEmail, learnerName, coach
     });
 }
 
+async function sendNewMessageNotification(toEmail, recipientName, senderName, count, threadLink) {
+    const plural = count > 1 ? `${count} new messages` : 'a new message';
+    return sendEmail({
+        to: toEmail,
+        subject: `New message from ${senderName} on Skill Next Door`,
+        html: `
+            <h2>Hi ${recipientName},</h2>
+            <p>You have ${plural} from <strong>${senderName}</strong> on Skill Next Door.</p>
+            <p style="margin: 24px 0;">
+                <a href="${threadLink}" style="background-color: #4C6444; color: #FFFFFF; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">View conversation</a>
+            </p>
+            <p style="color: #62665D;">You're receiving this because you haven't opened the conversation yet.</p>
+            <br>
+            <p>— The Skill Next Door Team</p>
+        `,
+        text: `Hi ${recipientName}, you have ${plural} from ${senderName} on Skill Next Door. View it: ${threadLink}`,
+    });
+}
+
 async function sendNewApplicationNotification(coachName, coachEmail) {
     const adminEmail = process.env.ADMIN_EMAIL;
     if (!adminEmail) return;
@@ -158,6 +177,7 @@ module.exports = {
     sendCoachRejectedEmail,
     sendContactRequestToCoach,
     sendContactConfirmationToLearner,
+    sendNewMessageNotification,
     sendNewApplicationNotification,
     sendVerificationEmail,
 };

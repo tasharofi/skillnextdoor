@@ -159,10 +159,10 @@ async function sendVerificationEmail(userEmail, userName, verificationLink) {
             <h2>Hi ${userName},</h2>
             <p>Thanks for signing up to Skill Next Door! Please verify your email address by clicking the button below.</p>
             <p style="margin: 24px 0;">
-                <a href="${verificationLink}" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">Verify Email</a>
+                <a href="${verificationLink}" style="background-color: #4C6444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">Verify Email</a>
             </p>
             <p>Or copy and paste this link into your browser:</p>
-            <p style="word-break: break-all; color: #6366f1;">${verificationLink}</p>
+            <p style="word-break: break-all; color: #4C6444;">${verificationLink}</p>
             <p>This link expires in 24 hours.</p>
             <br>
             <p>— The Skill Next Door Team</p>

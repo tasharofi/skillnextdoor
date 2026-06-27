@@ -2,6 +2,7 @@ const express = require('express');
 const prisma = require('../utils/prisma');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { sendCoachApprovedEmail, sendCoachRejectedEmail } = require('../utils/email');
+const { createNotification } = require('../utils/notifications');
 const { track } = require('../utils/analytics');
 
 const router = express.Router();
@@ -54,6 +55,12 @@ router.patch('/coaches/:id/approve', async (req, res) => {
 
         // Send approval email
         sendCoachApprovedEmail(profile.email || profile.user.email, profile.user.name).catch(() => {});
+        createNotification(profile.userId, {
+            type: 'COACH_APPROVED',
+            title: 'Your coach profile is live',
+            body: 'Learners can now find and message you.',
+            link: '/dashboard',
+        });
 
         res.json({ profile, message: 'Coach approved' });
     } catch (error) {
@@ -72,6 +79,12 @@ router.patch('/coaches/:id/reject', async (req, res) => {
         });
 
         sendCoachRejectedEmail(profile.email || profile.user.email, profile.user.name).catch(() => {});
+        createNotification(profile.userId, {
+            type: 'COACH_REJECTED',
+            title: 'Profile not approved',
+            body: 'You can update and resubmit your coach profile.',
+            link: '/profile',
+        });
 
         res.json({ profile, message: 'Coach rejected' });
     } catch (error) {
@@ -593,6 +606,13 @@ router.patch('/pending-edits/:id/approve', async (req, res) => {
             },
         });
 
+        createNotification(edit.coachProfile?.userId, {
+            type: 'EDIT_APPROVED',
+            title: 'Profile changes approved',
+            body: 'Your latest profile edits are now live.',
+            link: '/profile',
+        });
+
         res.json({
             pendingEdit: { ...updated, changes },
             message: 'Changes approved and applied to live profile',
@@ -608,6 +628,7 @@ router.patch('/pending-edits/:id/reject', async (req, res) => {
     try {
         const edit = await prisma.pendingProfileEdit.findUnique({
             where: { id: req.params.id },
+            include: { coachProfile: { select: { userId: true } } },
         });
 
         if (!edit) {
@@ -624,6 +645,13 @@ router.patch('/pending-edits/:id/reject', async (req, res) => {
                 status: 'REJECTED',
                 adminNotes: req.body.notes || '',
             },
+        });
+
+        createNotification(edit.coachProfile?.userId, {
+            type: 'EDIT_REJECTED',
+            title: 'Profile changes not approved',
+            body: 'Your recent profile edits were not approved. You can update and resubmit.',
+            link: '/profile',
         });
 
         res.json({

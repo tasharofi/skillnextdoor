@@ -50,6 +50,7 @@ model User {
   coachProfile       CoachProfile?
   emailVerifications EmailVerification[]
   sentMessages       Message[]
+  notifications      Notification[]
 }
 
 model EmailVerification {
@@ -184,5 +185,19 @@ model Message {
 
   @@index([contactRequestId])
   @@index([senderUserId])
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String    @default("")
+  link      String    @default("")
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 

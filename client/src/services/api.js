@@ -247,3 +247,13 @@ export const sendMessage = (id, body) =>
 
 export const markThreadRead = (id) =>
     fetch(`${API_URL}/messages/threads/${id}/read`, { method: 'POST', headers: getHeaders() }).then(handleResponse);
+
+// Notifications (unified feed: messages + system alerts)
+export const getNotifications = () =>
+    fetch(`${API_URL}/notifications`, { headers: getHeaders() }).then(handleResponse);
+
+export const markNotificationRead = (id) =>
+    fetch(`${API_URL}/notifications/${id}/read`, { method: 'POST', headers: getHeaders() }).then(handleResponse);
+
+export const markAllNotificationsRead = () =>
+    fetch(`${API_URL}/notifications/read-all`, { method: 'POST', headers: getHeaders() }).then(handleResponse);

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getMyContactRequests, getCoachStatus } from '../services/api';
+import { getMessageThreads, getCoachStatus } from '../services/api';
+import ConversationCard from '../components/ConversationCard';
 import VerifyEmailBanner from '../components/VerifyEmailBanner';
 
 const STATUS_CONFIG = {
@@ -15,43 +16,47 @@ const STATUS_CONFIG = {
 export default function Dashboard() {
     const { user, isCoach, isLearner, coachStatus } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const openId = searchParams.get('c');
+
     const [tab, setTab] = useState(isCoach ? 'coach' : 'learner');
-    const [coachRequests, setCoachRequests] = useState([]);
-    const [learnerRequests, setLearnerRequests] = useState([]);
+    const [threads, setThreads] = useState([]);
     const [coachProfile, setCoachProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!user) { navigate('/login'); return; }
-
         const loadData = async () => {
             setLoading(true);
             try {
-                const promises = [
-                    // Always fetch learner-sent requests
-                    getMyContactRequests('learner').catch(() => ({ contactRequests: [] })),
-                    // Fetch coach status if applicable
+                const [threadRes, statusRes] = await Promise.all([
+                    getMessageThreads().catch(() => ({ threads: [] })),
                     isCoach ? getCoachStatus().catch(() => ({ hasProfile: false })) : Promise.resolve({ hasProfile: false }),
-                ];
-                // If user is a coach, also fetch coach-received requests
-                if (isCoach) {
-                    promises.push(getMyContactRequests('coach').catch(() => ({ contactRequests: [] })));
-                }
-
-                const results = await Promise.all(promises);
-                setLearnerRequests(results[0].contactRequests || []);
-                if (results[1].hasProfile) setCoachProfile(results[1].profile);
-                if (isCoach && results[2]) {
-                    setCoachRequests(results[2].contactRequests || []);
-                }
-            } catch {}
-            finally { setLoading(false); }
+                ]);
+                setThreads(threadRes.threads || []);
+                if (statusRes.hasProfile) setCoachProfile(statusRes.profile);
+            } catch { /* ignore */ } finally {
+                setLoading(false);
+            }
         };
         loadData();
     }, [user, isCoach, navigate]);
 
-    if (!user) return null;
+    const coachThreads = useMemo(() => threads.filter((t) => t.role === 'COACH'), [threads]);
+    const learnerThreads = useMemo(() => threads.filter((t) => t.role === 'LEARNER'), [threads]);
+    const coachUnread = useMemo(() => coachThreads.reduce((n, t) => n + (t.unread > 0 ? 1 : 0), 0), [coachThreads]);
+    const learnerUnread = useMemo(() => learnerThreads.reduce((n, t) => n + (t.unread > 0 ? 1 : 0), 0), [learnerThreads]);
 
+    // Deep-link: open the dashboard on the tab that owns thread ?c=
+    useEffect(() => {
+        if (!openId || !threads.length) return;
+        const t = threads.find((x) => x.id === openId);
+        if (t && isCoach && isLearner) setTab(t.role === 'COACH' ? 'coach' : 'learner');
+    }, [openId, threads, isCoach, isLearner]);
+
+    const markThreadRead = (id) => setThreads((prev) => prev.map((t) => (t.id === id ? { ...t, unread: 0 } : t)));
+
+    if (!user) return null;
     const statusInfo = STATUS_CONFIG[coachStatus] || null;
 
     return (
@@ -69,31 +74,41 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Tabs for dual-role users */}
             {isCoach && isLearner && (
                 <div className="tabs">
-                    <button className={`tab ${tab === 'coach' ? 'active' : ''}`} onClick={() => setTab('coach')}>Coach</button>
-                    <button className={`tab ${tab === 'learner' ? 'active' : ''}`} onClick={() => setTab('learner')}>Learner</button>
+                    <button className={`tab ${tab === 'coach' ? 'active' : ''}`} onClick={() => setTab('coach')}>
+                        Coach{coachUnread > 0 && <span className="tab-badge">{coachUnread}</span>}
+                    </button>
+                    <button className={`tab ${tab === 'learner' ? 'active' : ''}`} onClick={() => setTab('learner')}>
+                        Learner{learnerUnread > 0 && <span className="tab-badge">{learnerUnread}</span>}
+                    </button>
                 </div>
             )}
 
             {loading ? (
                 <div className="loading">Loading dashboard...</div>
             ) : tab === 'coach' && isCoach ? (
-                <CoachDashboard statusInfo={statusInfo} coachStatus={coachStatus} coachProfile={coachProfile} contactRequests={coachRequests} user={user} />
+                <CoachDashboard
+                    statusInfo={statusInfo}
+                    coachStatus={coachStatus}
+                    coachProfile={coachProfile}
+                    threads={coachThreads}
+                    openId={openId}
+                    onRead={markThreadRead}
+                    user={user}
+                />
             ) : (
-                <LearnerDashboard contactRequests={learnerRequests} isCoach={isCoach} />
+                <LearnerDashboard threads={learnerThreads} isCoach={isCoach} openId={openId} onRead={markThreadRead} />
             )}
         </div>
     );
 }
 
-function CoachDashboard({ statusInfo, coachStatus, coachProfile, contactRequests, user }) {
-    const myRequests = contactRequests;
+function CoachDashboard({ statusInfo, coachStatus, coachProfile, threads, openId, onRead, user }) {
+    const unreadCount = threads.reduce((n, t) => n + (t.unread > 0 ? 1 : 0), 0);
 
     return (
         <>
-            {/* Status Banner */}
             {statusInfo && (
                 <div className={`coach-status-banner ${statusInfo.className}`}>
                     <div className="coach-status-label">{statusInfo.label}</div>
@@ -111,18 +126,15 @@ function CoachDashboard({ statusInfo, coachStatus, coachProfile, contactRequests
                 </div>
             )}
 
-            {/* Coach Stats */}
             {coachStatus === 'APPROVED' && (
                 <div className="dashboard-stats">
                     <div className="stat-card">
-                        <div className="stat-value">{myRequests.length}</div>
-                        <div className="stat-label">Total Requests</div>
+                        <div className="stat-value">{threads.length}</div>
+                        <div className="stat-label">Conversations</div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-value">
-                            {myRequests.filter(r => r.status === 'NEW').length}
-                        </div>
-                        <div className="stat-label">New Requests</div>
+                        <div className="stat-value">{unreadCount}</div>
+                        <div className="stat-label">Unread</div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-value">${coachProfile?.hourlyRate || 0}</div>
@@ -131,49 +143,29 @@ function CoachDashboard({ statusInfo, coachStatus, coachProfile, contactRequests
                 </div>
             )}
 
-            {/* Skills Summary */}
             {coachStatus === 'APPROVED' && coachProfile?.skills?.length > 0 && (
                 <div className="dashboard-card" style={{ marginTop: 'var(--space-4)' }}>
                     <h3 style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>Your Skills</h3>
                     <div className="coach-card-skills">
-                        {coachProfile.skills.map(s => (
+                        {coachProfile.skills.map((s) => (
                             <span key={s.skill?.id || s.id} className="skill-tag">{s.skill?.name || s.name}</span>
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* Contact Requests (for approved coaches) */}
             {coachStatus === 'APPROVED' && (
                 <div className="dashboard-card" style={{ marginTop: 'var(--space-4)' }}>
-                    <h2 className="dashboard-card-title">Session Requests</h2>
-                    {myRequests.length === 0 ? (
+                    <h2 className="dashboard-card-title">Requests &amp; messages</h2>
+                    {threads.length === 0 ? (
                         <div className="empty-state" style={{ padding: 'var(--space-8)' }}>
                             <div className="empty-state-icon">📬</div>
-                            <p>No session requests yet. Your profile is live — requests will appear here.</p>
+                            <p>No requests yet. Your profile is live — requests will appear here as conversations.</p>
                         </div>
                     ) : (
                         <div className="sessions-list">
-                            {myRequests.map((req) => (
-                                <div key={req.id} className="session-card">
-                                    <div className="session-card-top">
-                                        <div className="session-card-info">
-                                            <div className="session-card-person">
-                                                <div className="avatar avatar-sm">{req.learnerName?.charAt(0)}</div>
-                                                <div>
-                                                    <div className="session-card-name">{req.learnerName}</div>
-                                                    <div className="session-card-date">{req.learnerEmail}</div>
-                                                </div>
-                                            </div>
-                                            <span className={`session-status ${req.status?.toLowerCase()}`}>{req.status}</span>
-                                        </div>
-                                    </div>
-                                    {req.message && <div className="session-card-notes">{req.message}</div>}
-                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)', paddingLeft: 'calc(32px + var(--space-3))' }}>
-                                        {new Date(req.createdAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                        {req.preferredMode && req.preferredMode !== 'EITHER' && ` · ${req.preferredMode === 'IN_PERSON' ? 'In Person' : 'Online'}`}
-                                    </div>
-                                </div>
+                            {threads.map((t) => (
+                                <ConversationCard key={t.id} thread={t} defaultOpen={t.id === openId} onRead={onRead} />
                             ))}
                         </div>
                     )}
@@ -183,12 +175,12 @@ function CoachDashboard({ statusInfo, coachStatus, coachProfile, contactRequests
     );
 }
 
-function LearnerDashboard({ contactRequests, isCoach }) {
+function LearnerDashboard({ threads, isCoach, openId, onRead }) {
     return (
         <>
             {!isCoach && (
                 <div className="dashboard-card" style={{ marginBottom: 'var(--space-6)', background: 'var(--color-bg-secondary)' }}>
-                    <h3 style={{ marginBottom: 'var(--space-2)' }}>🎓 Good at something? Teach it locally.</h3>
+                    <h3 style={{ marginBottom: 'var(--space-2)' }}>Good at something? Teach it locally.</h3>
                     <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)', fontSize: 'var(--font-size-sm)' }}>
                         Create a profile, get discovered by learners nearby, and earn from the skills you already have.
                     </p>
@@ -197,8 +189,8 @@ function LearnerDashboard({ contactRequests, isCoach }) {
             )}
 
             <div className="dashboard-card">
-                <h2 className="dashboard-card-title">My Session Requests</h2>
-                {contactRequests.length === 0 ? (
+                <h2 className="dashboard-card-title">My requests &amp; messages</h2>
+                {threads.length === 0 ? (
                     <div className="empty-state" style={{ padding: 'var(--space-8)' }}>
                         <div className="empty-state-icon">📋</div>
                         <p>You haven't sent any session requests yet.</p>
@@ -206,28 +198,8 @@ function LearnerDashboard({ contactRequests, isCoach }) {
                     </div>
                 ) : (
                     <div className="sessions-list">
-                        {contactRequests.map((req) => (
-                            <div key={req.id} className="session-card">
-                                <div className="session-card-top">
-                                    <div className="session-card-info">
-                                        <div className="session-card-person">
-                                            <div className="avatar avatar-sm">{req.coachProfile?.user?.name?.charAt(0) || '?'}</div>
-                                            <div>
-                                                <div className="session-card-name">
-                                                    {req.coachProfile?.user?.slug ? (
-                                                        <Link to={`/coach/${req.coachProfile.user.slug}`}>{req.coachProfile.user.name}</Link>
-                                                    ) : (req.coachProfile?.user?.name || 'Coach')}
-                                                </div>
-                                                <div className="session-card-date">
-                                                    {new Date(req.createdAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <span className={`session-status ${req.status?.toLowerCase()}`}>{req.status === 'NEW' ? 'Sent' : req.status}</span>
-                                    </div>
-                                </div>
-                                {req.message && <div className="session-card-notes">{req.message}</div>}
-                            </div>
+                        {threads.map((t) => (
+                            <ConversationCard key={t.id} thread={t} defaultOpen={t.id === openId} onRead={onRead} />
                         ))}
                     </div>
                 )}

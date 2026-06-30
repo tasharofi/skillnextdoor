@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
+import UserMenu from './UserMenu';
 
 export default function Navbar() {
     const { user, loading, logout, isAdmin } = useAuth();
@@ -22,28 +23,16 @@ export default function Navbar() {
                 </Link>
 
                 <div className="nav-right">
-                    <div className="nav-actions">
-                        {loading ? null : user ? (
-                            <>
-                                {isAdmin && (
-                                    <Link to="/admin" className="btn btn-sm" style={{ color: 'var(--color-text-secondary)' }}>Admin</Link>
-                                )}
-                                <Link to="/dashboard" className="btn btn-outline btn-sm">Dashboard</Link>
-                                <Link to="/profile" className="btn btn-sm" style={{ color: 'var(--color-text-secondary)' }}>Profile</Link>
-                                <button onClick={handleLogout} className="btn btn-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                                    Sign Out
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <Link to="/register" className="nav-text-link">Sign up</Link>
-                                <Link to="/login" className="nav-text-link">Log in</Link>
-                                <Link to="/become-coach" className="btn nav-cta">Start Teaching</Link>
-                            </>
-                        )}
-                    </div>
+                    {!loading && !user && (
+                        <div className="nav-actions">
+                            <Link to="/register" className="nav-text-link">Sign up</Link>
+                            <Link to="/login" className="nav-text-link">Log in</Link>
+                            <Link to="/become-coach" className="btn nav-cta">Start Teaching</Link>
+                        </div>
+                    )}
 
                     {!loading && user && <NotificationBell />}
+                    {!loading && user && <UserMenu />}
 
                     <button className="nav-hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
                         {menuOpen ? '✕' : '☰'}

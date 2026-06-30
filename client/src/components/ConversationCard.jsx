@@ -82,12 +82,23 @@ export default function ConversationCard({ thread, defaultOpen = false, onRead }
                                 {detail.messages.length === 0 ? (
                                     <div className="msg-empty">No messages yet — say hello.</div>
                                 ) : (
-                                    detail.messages.map((m) => (
-                                        <div key={m.id} className={`msg-bubble ${m.fromMe ? 'me' : 'them'}`}>
-                                            {m.body}
-                                            <span className="msg-bubble-time">{shortTime(m.createdAt)}</span>
-                                        </div>
-                                    ))
+                                    detail.messages.map((m, i) => {
+                                        const prev = detail.messages[i - 1];
+                                        const showAvatar = !m.fromMe && (!prev || prev.fromMe);
+                                        return (
+                                            <div key={m.id} className={`msg-row ${m.fromMe ? 'me' : 'them'}`}>
+                                                {!m.fromMe && (
+                                                    showAvatar
+                                                        ? <span className="msg-avatar">{m.senderName?.charAt(0)?.toUpperCase() || '?'}</span>
+                                                        : <span className="msg-avatar-spacer" />
+                                                )}
+                                                <div className={`msg-bubble ${m.fromMe ? 'me' : 'them'}`}>
+                                                    {m.body}
+                                                    <span className="msg-bubble-time">{shortTime(m.createdAt)}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
                                 )}
                                 <div ref={bottomRef} />
                             </div>

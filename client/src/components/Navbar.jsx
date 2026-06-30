@@ -1,19 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
 import UserMenu from './UserMenu';
 
 export default function Navbar() {
-    const { user, loading, logout, isAdmin } = useAuth();
-    const navigate = useNavigate();
+    const { user, loading, isCoach } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
-
-    const handleLogout = () => {
-        logout();
-        navigate('/');
-        setMenuOpen(false);
-    };
 
     return (
         <nav className="nav">
@@ -31,33 +24,31 @@ export default function Navbar() {
                         </div>
                     )}
 
-                    {!loading && user && <NotificationBell />}
-                    {!loading && user && <UserMenu />}
+                    {!loading && user && (
+                        <>
+                            {!isCoach && (
+                                <Link to="/become-coach" className="btn nav-cta nav-cta-compact">Start Teaching</Link>
+                            )}
+                            <NotificationBell />
+                            <UserMenu />
+                        </>
+                    )}
 
-                    <button className="nav-hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
-                        {menuOpen ? '✕' : '☰'}
-                    </button>
+                    {!loading && !user && (
+                        <button className="nav-hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
+                            {menuOpen ? '✕' : '☰'}
+                        </button>
+                    )}
                 </div>
             </div>
 
-            <div className={`nav-mobile-menu ${menuOpen ? 'open' : ''}`}>
-                {loading ? null : user ? (
-                    <>
-                        {isAdmin && (
-                            <Link to="/admin" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Admin Panel</Link>
-                        )}
-                        <Link to="/dashboard" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Dashboard</Link>
-                        <Link to="/profile" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Profile</Link>
-                        <button className="nav-mobile-link" onClick={handleLogout} style={{ textAlign: 'left' }}>Sign Out</button>
-                    </>
-                ) : (
-                    <>
-                        <Link to="/register" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Sign up</Link>
-                        <Link to="/login" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Log in</Link>
-                        <Link to="/become-coach" className="nav-mobile-link nav-mobile-accent" onClick={() => setMenuOpen(false)}>Start Teaching</Link>
-                    </>
-                )}
-            </div>
+            {!loading && !user && (
+                <div className={`nav-mobile-menu ${menuOpen ? 'open' : ''}`}>
+                    <Link to="/register" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Sign up</Link>
+                    <Link to="/login" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Log in</Link>
+                    <Link to="/become-coach" className="nav-mobile-link nav-mobile-accent" onClick={() => setMenuOpen(false)}>Start Teaching</Link>
+                </div>
+            )}
         </nav>
     );
 }

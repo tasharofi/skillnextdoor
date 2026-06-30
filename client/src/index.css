@@ -3803,8 +3803,42 @@ select.form-input {
 .usermenu-item.danger svg { color: var(--color-error); }
 
 @media (max-width: 767px) {
-  .usermenu { display: none; }
+  .usermenu-dropdown {
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    width: auto;
+    border-radius: 0 0 16px 16px;
+    border-left: none;
+    border-right: none;
+  }
+  .usermenu-head { padding: 16px 18px; }
+  .usermenu-item { padding: 15px 18px; font-size: var(--font-size-base); }
 }
+
+/* Compact pill for the in-bar "Start Teaching" (logged-in) */
+.nav-cta-compact {
+  padding: 8px 16px;
+}
+
+/* Sender avatar beside incoming message bubbles */
+.msg-row { display: flex; align-items: flex-end; gap: 8px; }
+.msg-row.me { justify-content: flex-end; }
+.msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-active);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.msg-avatar-spacer { width: 28px; flex-shrink: 0; }
 
 .notif-foot {
   width: 100%;

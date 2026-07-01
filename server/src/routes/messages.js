@@ -125,7 +125,7 @@ router.get('/threads/:id', authenticate, async (req, res) => {
         const messages = await prisma.message.findMany({
             where: { contactRequestId: thread.id },
             orderBy: { createdAt: 'asc' },
-            include: { sender: { select: { id: true, name: true } } },
+            include: { sender: { select: { id: true, name: true, avatar: true } } },
         });
 
         // Mark messages addressed to me as read
@@ -156,7 +156,7 @@ router.get('/threads/:id', authenticate, async (req, res) => {
                 id: m.id,
                 body: m.body,
                 senderRole: m.senderRole,
-                senderName: m.sender?.name || 'User',
+                senderName: m.sender?.name || 'User', senderAvatar: m.sender?.avatar || null,
                 fromMe: m.senderUserId === req.user.id,
                 createdAt: m.createdAt,
             })),
@@ -185,7 +185,7 @@ router.post('/threads/:id', authenticate, async (req, res) => {
                 senderRole: role,
                 body,
             },
-            include: { sender: { select: { id: true, name: true } } },
+            include: { sender: { select: { id: true, name: true, avatar: true } } },
         });
 
         await prisma.contactRequest.update({
@@ -198,7 +198,7 @@ router.post('/threads/:id', authenticate, async (req, res) => {
                 id: message.id,
                 body: message.body,
                 senderRole: message.senderRole,
-                senderName: message.sender?.name || 'User',
+                senderName: message.sender?.name || 'User', senderAvatar: message.sender?.avatar || null,
                 fromMe: true,
                 createdAt: message.createdAt,
             },

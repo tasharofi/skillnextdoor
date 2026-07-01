@@ -17,6 +17,11 @@ function parseList(s) {
     try { const a = JSON.parse(s || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
 }
 
+function avatarSrc(url) {
+    if (!url) return null;
+    return url.startsWith('http') ? url : (import.meta.env.VITE_API_BASE_URL || '') + url;
+}
+
 // Map a thread's raw data to a display status per role.
 function statusFor(t) {
     if (!t) return { label: '', cls: '' };
@@ -162,7 +167,9 @@ export default function MessagesInbox({ threads, role, openId, onRead }) {
                                     return (
                                         <div key={m.id} className={`msg-row ${m.fromMe ? 'me' : 'them'}`}>
                                             {!m.fromMe && (showAvatar
-                                                ? <span className="msg-avatar">{m.senderName?.charAt(0)?.toUpperCase() || '?'}</span>
+                                                ? (m.senderAvatar
+                                                    ? <img src={avatarSrc(m.senderAvatar)} alt="" className="msg-avatar-img" />
+                                                    : <span className="msg-avatar">{m.senderName?.charAt(0)?.toUpperCase() || '?'}</span>)
                                                 : <span className="msg-avatar-spacer" />)}
                                             <div className={`msg-bubble ${m.fromMe ? 'me' : 'them'}`}>
                                                 {m.body}

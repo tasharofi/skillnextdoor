@@ -3839,6 +3839,7 @@ select.form-input {
   flex-shrink: 0;
 }
 .msg-avatar-spacer { width: 28px; flex-shrink: 0; }
+.msg-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 
 /* ============================================
    Inbox (requests & messages)

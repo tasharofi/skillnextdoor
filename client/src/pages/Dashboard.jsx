@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getMessageThreads, getCoachStatus } from '../services/api';
-import ConversationCard from '../components/ConversationCard';
+import MessagesInbox from '../components/MessagesInbox';
 import VerifyEmailBanner from '../components/VerifyEmailBanner';
 
 const STATUS_CONFIG = {
@@ -152,20 +152,9 @@ function CoachDashboard({ statusInfo, coachStatus, coachProfile, threads, openId
             )}
 
             {coachStatus === 'APPROVED' && (
-                <div className="dashboard-card" style={{ marginTop: 'var(--space-4)' }}>
-                    <h2 className="dashboard-card-title">Requests &amp; messages</h2>
-                    {threads.length === 0 ? (
-                        <div className="empty-state" style={{ padding: 'var(--space-8)' }}>
-                            <div className="empty-state-icon">📬</div>
-                            <p>No requests yet. Your profile is live — requests will appear here as conversations.</p>
-                        </div>
-                    ) : (
-                        <div className="sessions-list">
-                            {threads.map((t) => (
-                                <ConversationCard key={t.id} thread={t} defaultOpen={t.id === openId} onRead={onRead} />
-                            ))}
-                        </div>
-                    )}
+                <div style={{ marginTop: 'var(--space-6)' }}>
+                    <h2 className="dashboard-card-title" style={{ marginBottom: 'var(--space-3)' }}>Requests &amp; messages</h2>
+                    <MessagesInbox threads={threads} role="COACH" openId={openId} onRead={onRead} />
                 </div>
             )}
         </>
@@ -185,21 +174,9 @@ function LearnerDashboard({ threads, isCoach, openId, onRead }) {
                 </div>
             )}
 
-            <div className="dashboard-card">
-                <h2 className="dashboard-card-title">My requests &amp; messages</h2>
-                {threads.length === 0 ? (
-                    <div className="empty-state" style={{ padding: 'var(--space-8)' }}>
-                        <div className="empty-state-icon">📋</div>
-                        <p>You haven't sent any session requests yet.</p>
-                        <Link to="/search" className="btn btn-primary btn-sm" style={{ marginTop: 'var(--space-4)' }}>Find a Coach</Link>
-                    </div>
-                ) : (
-                    <div className="sessions-list">
-                        {threads.map((t) => (
-                            <ConversationCard key={t.id} thread={t} defaultOpen={t.id === openId} onRead={onRead} />
-                        ))}
-                    </div>
-                )}
+            <div>
+                <h2 className="dashboard-card-title" style={{ marginBottom: 'var(--space-3)' }}>My requests &amp; messages</h2>
+                <MessagesInbox threads={threads} role="LEARNER" openId={openId} onRead={onRead} />
             </div>
         </>
     );

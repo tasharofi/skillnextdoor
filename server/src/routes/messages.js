@@ -10,7 +10,12 @@ async function loadThreadForUser(threadId, user) {
     const thread = await prisma.contactRequest.findUnique({
         where: { id: threadId },
         include: {
-            coachProfile: { select: { userId: true, user: { select: { name: true, slug: true } } } },
+            coachProfile: {
+                select: {
+                    userId: true, headline: true, hourlyRate: true, suburb: true, state: true, sessionMode: true,
+                    user: { select: { name: true, slug: true } },
+                },
+            },
         },
     });
     if (!thread) return { status: 404, error: 'Conversation not found' };
@@ -50,7 +55,12 @@ router.get('/threads', authenticate, async (req, res) => {
         const threads = await prisma.contactRequest.findMany({
             where: { OR: [{ learnerUserId: userId }, { coachProfile: { userId } }] },
             include: {
-                coachProfile: { select: { userId: true, user: { select: { name: true, slug: true } } } },
+                coachProfile: {
+                    select: {
+                        userId: true, headline: true, hourlyRate: true, suburb: true, state: true,
+                        user: { select: { name: true, slug: true } },
+                    },
+                },
                 messages: { orderBy: { createdAt: 'desc' }, take: 1 },
             },
             orderBy: [{ lastMessageAt: 'desc' }, { createdAt: 'desc' }],
@@ -66,6 +76,16 @@ router.get('/threads', authenticate, async (req, res) => {
             : [];
         const unreadMap = Object.fromEntries(unreadGroups.map((g) => [g.contactRequestId, g._count._all]));
 
+        // Which threads the current user has sent at least one message in (for status labels)
+        const mineGroups = ids.length
+            ? await prisma.message.groupBy({
+                by: ['contactRequestId'],
+                where: { contactRequestId: { in: ids }, senderUserId: userId },
+                _count: { _all: true },
+            })
+            : [];
+        const mineSet = new Set(mineGroups.map((g) => g.contactRequestId));
+
         const result = threads.map((t) => {
             const iAmCoach = t.coachProfile?.userId === userId;
             const last = t.messages[0] || null;
@@ -74,7 +94,12 @@ router.get('/threads', authenticate, async (req, res) => {
                 role: iAmCoach ? 'COACH' : 'LEARNER',
                 otherName: iAmCoach ? t.learnerName : t.coachProfile?.user?.name || 'Coach',
                 coachSlug: t.coachProfile?.user?.slug || null,
+                headline: t.coachProfile?.headline || '',
+                rate: t.coachProfile?.hourlyRate || 0,
+                sessionMode: t.preferredMode || 'EITHER',
+                suburb: t.preferredSuburb || t.coachProfile?.suburb || '',
                 status: t.status,
+                iHaveReplied: mineSet.has(t.id),
                 lastMessageAt: t.lastMessageAt || t.createdAt,
                 lastMessage: last
                     ? { body: last.body, createdAt: last.createdAt, fromMe: last.senderUserId === userId }
@@ -118,7 +143,13 @@ router.get('/threads/:id', authenticate, async (req, res) => {
                 coachName: thread.coachProfile?.user?.name || 'Coach',
                 coachSlug: thread.coachProfile?.user?.slug || null,
                 learnerName: thread.learnerName,
+                headline: thread.coachProfile?.headline || '',
+                rate: thread.coachProfile?.hourlyRate || 0,
                 preferredMode: thread.preferredMode,
+                suburb: thread.preferredSuburb || thread.coachProfile?.suburb || '',
+                preferredDays: thread.preferredDays || '[]',
+                preferredTimes: thread.preferredTimes || '[]',
+                iHaveReplied: messages.some((m) => m.senderUserId === req.user.id),
                 createdAt: thread.createdAt,
             },
             messages: messages.map((m) => ({

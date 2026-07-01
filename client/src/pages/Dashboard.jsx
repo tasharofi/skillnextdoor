@@ -68,9 +68,6 @@ export default function Dashboard() {
                         <h1 className="dashboard-title">Welcome, {user.name}</h1>
                         <p className="dashboard-subtitle">{user.email}</p>
                     </div>
-                    {!isCoach && (
-                        <Link to="/become-coach" className="btn btn-accent btn-sm">Start Teaching</Link>
-                    )}
                 </div>
             </div>
 
